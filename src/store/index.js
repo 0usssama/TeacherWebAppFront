@@ -2,16 +2,19 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import PostsService from "@/services/PostsService.js";
+import SliderService from "@/services/SliderService.js";
+import FileService from "@/services/FileService.js";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    slider: [],
     posts: [],
     NavItems: [
       { title: "Dashboard", icon: "mdi-view-dashboard", route: "/" },
-
       { title: "About", icon: "mdi-help-box", route: "/about" },
+      { title: "Slider", icon: "mdi-help-box", route: "/slider" },
     ],
   },
   mutations: {
@@ -31,55 +34,90 @@ export default new Vuex.Store({
       state.posts.splice(payload.index, 1);
       console.log("delete mutation");
     },
+    SET_SLIDER(state, slider) {
+      state.slider = slider;
+    },
+    UPDATE_SLIDER(state, payload) {
+      Object.assign(state.slider[payload.index], payload.slider);
+    },
   },
   actions: {
-    createPost({ commit }, post) {
-      PostsService.postPost(post)
-        .then(() => {
-          commit("ADD_POST", post);
-        })
-        .catch((error) => {
-          console.log(
-            "There was an error store adding request:",
-            error.response
-          );
+    async createPost({ commit }, post) {
+      try {
+        await PostsService.postPost(post).then((res) => {
+          // console.log("creating promise vuex");
+          commit("ADD_POST", res.data);
         });
+      } catch (error) {
+        //console.log("There was an error store adding request:", error.response);
+        throw new Error("vx-error creating post");
+      }
     },
-    fetchPosts({ commit }) {
-      PostsService.getPosts()
-        .then((response) => {
+    async fetchPosts({ commit }) {
+      try {
+        await PostsService.getPosts().then((response) => {
           commit("SET_POSTS", response.data);
-        })
-        .catch((error) => {
-          console.log("There was an error:", error.response);
         });
+      } catch (error) {
+        //console.log("There was an error:", error.response);
+        throw new Error("vx-error fetching post");
+      }
     },
-    updatePost({ commit }, payload) {
+    async updatePost({ commit }, payload) {
       //console.log(payload);
-      PostsService.updatePost(payload.post)
-        .then(() => {
+      try {
+        await PostsService.updatePost(payload.post).then((res) => {
           // console.log("updated action");
+
           commit("UPDATE_POST", {
-            post: payload.post,
+            post: res.data,
             index: payload.index,
           });
-        })
-        .catch((error) => {
-          console.log(error);
         });
+      } catch (error) {
+        // console.log(error.response);
+        throw new Error("vx-error updating post");
+      }
     },
-    deletePost({ commit }, payload) {
-      PostsService.deletePost(payload.post)
-        .then(() => {
+    async deletePost({ commit }, payload) {
+      try {
+        await PostsService.deletePost(payload.post).then(() => {
           console.log("delete action");
           commit("DELETE_POST", {
             post: payload.post,
             index: payload.index,
           });
-        })
-        .catch((error) => {
-          console.log(error);
         });
+      } catch (error) {
+        //console.log(error);
+        throw new Error("vx-error deleting post");
+      }
+    },
+    async fetchSlider({ commit }) {
+      try {
+        await SliderService.getSlider().then((response) => {
+          commit("SET_SLIDER", response.data);
+        });
+      } catch (error) {
+        //console.log(error);
+        throw new Error("vx-error fetching slider");
+      }
+    },
+    async updateSlider({ commit }, payload) {
+      try {
+        payload.slider.imgSrc = payload.file.name
+          ? (await FileService.uploadFile(payload.file)).data.file
+          : this.state.slider[payload.index].imgSrc;
+        await SliderService.updateSlider(payload).then(() => {
+          commit("UPDATE_SLIDER", {
+            slider: payload.slider,
+            index: payload.index,
+          });
+        });
+      } catch (error) {
+        //console.log(error);
+        throw new Error("vx-error updating post");
+      }
     },
   },
   modules: {},

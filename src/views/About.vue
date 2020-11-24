@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapActions } from "vuex";
 export default {
   data: () => ({
     dialog: false,
@@ -128,14 +128,14 @@ export default {
     },
   },
 
-  created() {
-    this.$store.dispatch("fetchPosts");
+  async created() {
+    await this.fetchPosts();
 
     this.initialize();
   },
 
   methods: {
-    initialize() {},
+    ...mapActions(["updatePost", "deletePost", "createPost", "fetchPosts"]),
 
     editItem(item) {
       this.editedIndex = this.posts.indexOf(item);
@@ -143,14 +143,14 @@ export default {
       this.dialog = true;
     },
 
-    deleteItem(item) {
+    async deleteItem(item) {
       /*
       const index = this.posts.indexOf(item);
       confirm("Are you sure you want to delete this item?") &&
         this.posts.splice(index, 1);*/
       const index = this.posts.indexOf(item);
 
-      this.$swal({
+      let swalPromise = this.$swal({
         title: "Are you sure?",
         text: "You won't be able to revert this!",
         icon: "warning",
@@ -158,19 +158,28 @@ export default {
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, delete it!",
-      }).then((result) => {
+      });
+
+      await swalPromise.then((result) => {
         if (result.isConfirmed) {
-          this.$store
-            .dispatch("deletePost", {
+          try {
+            this.deletePost({
               post: item,
               index: index,
-            })
-            .then(() => {
+            }).then(() => {
               this.$swal("Deleted!", "Your post has been deleted.", "success");
-            })
-            .catch(() => {
-              console.log("There was a dispatch problem deleting your event");
             });
+          } catch (error) {
+            console.log(
+              "There was a dispatch problem deleting your event" +
+                error.response
+            );
+            this.$swal({
+              icon: "error",
+              title: "Oops...",
+              text: "Something went wrong!",
+            });
+          }
         }
       });
     },
@@ -183,29 +192,56 @@ export default {
       });
     },
 
-    save() {
+    async save() {
       //hna
       if (this.editedIndex > -1) {
         // Object.assign(this.posts[this.editedIndex], this.editedItem);
-        this.$store
-          .dispatch("updatePost", {
-            post: this.editedItem,
-            index: this.editedIndex,
-          })
-          .catch(() => {
-            console.log("There was a dispatch problem updating your event");
+
+        let updatePromise = this.updatePost({
+          post: this.editedItem,
+          index: this.editedIndex,
+        });
+        try {
+          await updatePromise
+            .then(() => {
+              this.$swal("Good job!", "post updated!", "success");
+            })
+            .catch((/*error*/) => {
+              this.$swal({
+                icon: "error",
+                title: "Oops...",
+                text: "Something went wrong when updating your post!",
+              });
+              //console.log(error);
+            });
+        } catch (error) {
+          /* console.log(
+            "(in catch updatePromise ) There was a dispatch problem updating your event" +
+              error.response
+          );*/
+          this.$swal({
+            icon: "error",
+            title: "Oops...",
+            text: "Something went wrong!",
           });
+        }
       } else {
         //this.posts.push(this.editedItem);
         //console.log(this.editedItem);
-        this.$store
-          .dispatch("createPost", this.editedItem)
+        let createPromise = this.createPost(this.editedItem);
+
+        await createPromise
           .then(() => {
             //console.log("it works, posted!");
             this.$swal("Good job!", "Post created!", "success");
           })
           .catch(() => {
             console.log("There was a problem dispatch creating your event");
+            this.$swal({
+              icon: "error",
+              title: "Oops...",
+              text: "Something went wrong!",
+            });
           });
       }
       this.close();
