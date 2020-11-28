@@ -74,9 +74,7 @@
         </v-icon>
       </template>
       <template v-slot:no-data>
-        <v-btn color="primary" @click="initialize">
-          Reset
-        </v-btn>
+        <h2>No data</h2>
       </template>
     </v-data-table>
   </div>
@@ -130,8 +128,6 @@ export default {
 
   async created() {
     await this.fetchPosts();
-
-    this.initialize();
   },
 
   methods: {

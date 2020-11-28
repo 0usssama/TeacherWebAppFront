@@ -1,6 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
-
+import auth from "./auth";
 import PostsService from "@/services/PostsService.js";
 import SliderService from "@/services/SliderService.js";
 import FileService from "@/services/FileService.js";
@@ -9,6 +9,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    authenticated: false,
     slider: [],
     posts: [],
     NavItems: [
@@ -18,6 +19,9 @@ export default new Vuex.Store({
     ],
   },
   mutations: {
+    SET_AUTH(state) {
+      state.authenticated = !state.authenticated;
+    },
     SET_POSTS(state, posts) {
       state.posts = posts;
     },
@@ -42,6 +46,9 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    logSwitch({ commit }) {
+      commit("SET_AUTH");
+    },
     async createPost({ commit }, post) {
       try {
         await PostsService.postPost(post).then((res) => {
@@ -120,6 +127,6 @@ export default new Vuex.Store({
       }
     },
   },
-  modules: {},
+  modules: { auth },
   getters: {},
 });
