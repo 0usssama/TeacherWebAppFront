@@ -1,8 +1,8 @@
 module.exports = {
-  transpileDependencies: ["vuetify"],
+  transpileDependencies: ['vuetify'],
   devServer: {
-    host: "0.0.0.0",
+    host: 'localhost',
     hot: true,
-    disableHostCheck: true,
-  },
-};
+    disableHostCheck: true
+  }
+}

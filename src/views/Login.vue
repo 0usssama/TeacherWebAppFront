@@ -5,6 +5,17 @@
         <v-card-title>
           <h1 class="display-1">Login</h1>
         </v-card-title>
+
+        <v-card
+          v-if="auth.errors != ''"
+          class="d-flex justify-center"
+          flat
+          tile
+        >
+          <v-alert border="left" elevation="5" outlined type="error">
+            {{ auth.errors }}
+          </v-alert>
+        </v-card>
         <v-card-text>
           <v-form>
             <ValidationProvider
@@ -14,6 +25,7 @@
               v-slot="{ errors, valid }"
             >
               <v-text-field
+                @focus="clearError"
                 :error-messages="errors"
                 :success="valid"
                 v-model="userCredentials.email"
@@ -28,6 +40,7 @@
               v-slot="{ errors, valid }"
             >
               <v-text-field
+                @focus="clearError"
                 :error-messages="errors"
                 :success="valid"
                 v-model="userCredentials.password"
@@ -59,34 +72,39 @@
 </template>
 
 <script>
-import { mapActions, mapState } from "vuex";
+import { mapActions, mapState } from 'vuex'
 export default {
   computed: {
-    ...mapState(["authenticated"]),
+    ...mapState(['authenticated']),
+    ...mapState(['auth', 'auth'])
   },
   data() {
     return {
       showPassword: false,
       userCredentials: {
         email: null,
-        password: null,
-      },
-    };
+        password: null
+      }
+    }
   },
   methods: {
     ...mapActions({
-      signIn: "auth/signIn",
+      signIn: 'auth/signIn',
+      clear: 'auth/clear'
     }),
+    clearError() {
+      this.clear()
+    },
+
     async initiateLogin() {
       try {
-        let loginPromise = this.signIn(this.userCredentials);
-        await loginPromise.then(() => {});
+        await this.signIn(this.userCredentials)
       } catch (e) {
-        console.log(e.response);
+        console.log(e)
       }
-    },
-  },
-};
+    }
+  }
+}
 </script>
 
 <style></style>

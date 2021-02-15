@@ -1,15 +1,13 @@
 <template>
   <div>
-    <v-navigation-drawer v-model="returnedTest" app>
+    <v-navigation-drawer v-model="drawer" app>
       <!--  -->
       <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title">
-            Application
+            Menu
           </v-list-item-title>
-          <v-list-item-subtitle>
-            subtext
-          </v-list-item-subtitle>
+          <v-list-item-subtitle> </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
 
@@ -36,18 +34,28 @@
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import { mapState, mapActions } from 'vuex'
 export default {
-  props: ["returnedTest"],
+  created() {
+    this.setDrawer()
+  },
   computed: {
-    ...mapState(["NavItems"]),
+    ...mapState(['NavItems', 'drawerState'])
   },
   data() {
     return {
-      right: null,
-    };
+      drawer: this.drawerState
+    }
   },
-};
+  methods: {
+    ...mapActions(['setDrawer'])
+  },
+  watch: {
+    drawerState(newValue) {
+      this.drawer = newValue
+    }
+  }
+}
 </script>
 
 <style></style>

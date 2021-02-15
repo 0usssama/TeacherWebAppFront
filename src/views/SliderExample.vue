@@ -190,10 +190,10 @@ export default {
     file: [],
     readers: [],
     rules: [
-      value =>
+      (value) =>
         !value ||
         value.size < 5000000 ||
-        "Avatar size should be less than 5 MB!"
+        "Avatar size should be less than 5 MB!",
     ],
     dialog: false,
     headers: [
@@ -201,14 +201,14 @@ export default {
         text: "#",
         align: "start",
         sortable: true,
-        value: "id"
+        value: "id",
       },
       { text: "Image", value: "imgSrc" },
       { text: "Title 1", value: "title1" },
       { text: "Title 2", value: "title2" },
       { text: "Buttons", value: "slider_buttons" },
 
-      { text: "Actions", value: "actions", sortable: false }
+      { text: "Actions", value: "actions", sortable: false },
     ],
     editedIndex: -1,
     editedItem: {
@@ -216,15 +216,15 @@ export default {
       imgSrc: "",
       title1: "",
       title2: "",
-      slider_buttons: {}
+      slider_buttons: {},
     },
     defaultItem: {
       id: "",
       imgSrc: "",
       title1: "",
       title2: "",
-      slider_buttons: {}
-    }
+      slider_buttons: {},
+    },
   }),
 
   computed: {
@@ -232,23 +232,21 @@ export default {
       return this.editedIndex === -1 ? "New Item" : "Edit Item";
     },
 
-    ...mapState(["slider", "NavItems"])
+    ...mapState(["slider", "NavItems"]),
   },
 
   watch: {
     dialog(val) {
       val || this.close();
-    }
+    },
   },
 
-  created() {
-    this.$store.dispatch("fetchSlider");
-
-   
+  async created() {
+    await this.fetchSlider();
   },
 
   methods: {
-    ...mapActions(["deleteSlider", "updateSlider"]),
+    ...mapActions(["deleteSlider", "updateSlider", "fetchSlider"]),
     alerting(message) {
       this.$swal("Good job!", message, "success");
     },
@@ -271,15 +269,15 @@ export default {
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
+        confirmButtonText: "Yes, delete it!",
       });
 
-      await swalPromise.then(result => {
+      await swalPromise.then((result) => {
         if (result.isConfirmed) {
           try {
             this.deleteSlider({
               slider: item,
-              index: index
+              index: index,
             }).then(() => {
               this.$swal(
                 "Deleted!",
@@ -295,7 +293,7 @@ export default {
             this.$swal({
               icon: "error",
               title: "Oops...",
-              text: "Something went wrong!"
+              text: "Something went wrong!",
             });
           }
         }
@@ -319,7 +317,7 @@ export default {
         let updatePromise = this.updateSlider({
           slider: this.editedItem,
           index: this.editedIndex,
-          file: this.file
+          file: this.file,
         });
 
         try {
@@ -331,12 +329,12 @@ export default {
           this.$swal({
             icon: "error",
             title: "Oops...",
-            text: "Something went wrong when updating your slider!"
+            text: "Something went wrong when updating your slider!",
           });
         }
       }
       this.close();
-    }
-  }
+    },
+  },
 };
 </script>
